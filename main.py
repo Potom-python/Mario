@@ -3,7 +3,7 @@ import sys
 import os
 
 pygame.init()
-FPS = 30
+FPS = 60
 size = width, height = 1000, 1000
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
@@ -48,6 +48,43 @@ class Button_anim(pygame.sprite.Sprite):
         self.rect.x = 10
         self.rect.top = top
 
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.image = load_image('mario1.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = 20
+        self.rect.y = height - self.rect.height
+        self.y_speed = 0
+        self.grav = 1
+        self.jump = False
+
+    def update(self):
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += 5
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= 5
+
+        if self.jump:
+            self.y_speed += self.grav
+            self.rect.y += self.y_speed
+
+        if self.rect.bottom >= height:
+            self.jump = False
+            self.rect.bottom = height
+            self.y_speed = 0
+
+    def jump_act(self):
+        if not self.jump:
+            self.jump = True
+            self.y_speed = -15
+
+
+all_sprites = pygame.sprite.Group()
+player = Player()
 
 def start_screen():
     intro_text = ["Игра про марио", "",
@@ -117,7 +154,7 @@ def start_screen():
                         schet_anim = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 if schet_anim == 0 or schet_anim == -3:
-                    pass
+                    return
                 elif schet_anim == 1 or schet_anim == -2:
                     pass
                 elif schet_anim == 2 or schet_anim == -1:
@@ -128,3 +165,22 @@ def start_screen():
 
 
 start_screen()
+
+running = True
+
+while running:
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player.jump_act()
+
+    player.update()
+    screen.fill((100, 150, 255))
+    clock.tick(FPS)
+    all_sprites.draw(screen)
+    pygame.display.flip()
+
+pygame.quit()
