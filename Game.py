@@ -63,47 +63,60 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = tile_width * pos_x
         self.rect.y = tile_height * pos_y - 19
         self.y_speed = 0
+        self.x_speed = 0
         self.grav = 1
         self.jump = False
-        self.sky = False
+        self.sky = True
 
-    def jump_act(self):
-        if not self.jump:
-            self.jump = True
-            self.y_speed = -15
-
-    def update(self, sprite):
+    def update(self):
         keys = pygame.key.get_pressed()
-        collide_box = pygame.sprite.spritecollideany(sprite, box_group)
-        collide_sky = pygame.sprite.spritecollideany(sprite, sky_group)
+        v = 5
 
         if keys[pygame.K_RIGHT]:
-            self.rect.x += 5
-            collide_box = pygame.sprite.spritecollideany(sprite, box_group)
-            if collide_box and self.rect.y + self.rect.height - 5 > collide_box.rect.y:
-                self.rect.x -= 5
+            self.x_speed = v
+        else:
+            self.x_speed = 0
+
+        if keys[pygame.K_UP]:
+            self.jump = True
+
         if keys[pygame.K_LEFT]:
-            self.rect.x -= 5
-            collide_box = pygame.sprite.spritecollideany(sprite, box_group)
-            if collide_box and self.rect.y + self.rect.height - 5 > collide_box.rect.y:
-                self.rect.x += 5
+            self.x_speed = -v
+        elif not keys[pygame.K_RIGHT]:
+            self.x_speed = 0
 
-        if self.jump:
+        if self.jump and not self.sky:
+            self.y_speed = -15
+            self.collide(0, self.y_speed, box_group)
+
+        if self.sky:
             self.y_speed += self.grav
-            self.rect.y += self.y_speed
 
-        if collide_sky and not self.jump:
-            self.sky = True
+        self.sky = True
+        self.rect.y += self.y_speed
+        self.collide(0, self.y_speed, box_group)
 
-        if collide_box and (self.jump or self.sky) and self.rect.y + self.rect.height + 5 > collide_box.rect.y:
-            self.sky = False
-            self.jump = False
-            self.rect.bottom = collide_box.rect.y + 5
-            self.y_speed = 0
+        self.rect.x += self.x_speed
+        self.collide(self.x_speed, 0, box_group)
 
-        if self.sky and not collide_box:
-            self.y_speed += self.grav
-            self.rect.y += self.y_speed
+    def collide(self, x_speed, y_speed, box_group):
+        for box in box_group:
+            if pygame.sprite.collide_rect(self, box):
+                if x_speed > 0:
+                    self.rect.right = box.rect.left
+
+                if x_speed < 0:
+                    self.rect.left = box.rect.right
+
+                if y_speed > 0:
+                    self.rect.bottom = box.rect.top
+                    self.sky = False
+                    self.jump = False
+                    self.y_speed = 0
+
+                if y_speed < 0:
+                    self.rect.top = box.rect.bottom
+                    self.y_speed = 0
 
 
 all_sprites = pygame.sprite.Group()
@@ -155,11 +168,8 @@ def game(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    player.jump_act()
         screen.fill((0, 0, 0))
-        player_group.update(player)
+        player_group.update()
         sky_group.draw(screen)
         tiles_group.draw(screen)
         box_group.draw(screen)
