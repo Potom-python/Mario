@@ -7,7 +7,6 @@ def terminate():
     pygame.quit()
     sys.exit()
 
-
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
@@ -68,7 +67,7 @@ class Player(pygame.sprite.Sprite):
         self.jump = False
         self.sky = True
 
-    def update(self):
+    def update(self, func_sound, sound):
         keys = pygame.key.get_pressed()
         v = 5
 
@@ -77,7 +76,8 @@ class Player(pygame.sprite.Sprite):
         else:
             self.x_speed = 0
 
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
+            func_sound(sound)
             self.jump = True
 
         if keys[pygame.K_LEFT]:
@@ -126,6 +126,7 @@ sky_group = pygame.sprite.Group()
 box_group = pygame.sprite.Group()
 
 pygame.init()
+pygame.mixer.init()
 size = width, height = 1000, 325
 screen = pygame.display.set_mode(size)
 
@@ -156,8 +157,22 @@ def generate_level(level):
                 Box('wall', x, y)
     return new_player, x, y
 
+def music_level(music_name):
+    try:
+        pygame.mixer.music.load('sounds/' + music_name)
+        pygame.mixer.music.play(-1)
+    except pygame.error:
+        print('Не удалось загрузить звуковой файл')
+
+def sound_level(sound_name):
+    try:
+        sound = pygame.mixer.Sound('sounds/' + sound_name)
+        sound.play()
+    except pygame.error:
+        print('Не удалось загрузить звуковой файл')
 
 def game(screen):
+    music_level('soundtrek1.mp3')
     filename = 'level1.txt'
     if not os.path.exists('levels/' + filename):
         print(f"Файл с уровнем '{filename}' не найден")
@@ -169,13 +184,12 @@ def game(screen):
             if event.type == pygame.QUIT:
                 terminate()
         screen.fill((0, 0, 0))
-        player_group.update()
+        player_group.update(sound_level, 'sfx-13.mp3')
         sky_group.draw(screen)
         tiles_group.draw(screen)
         box_group.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
-
 
 game(screen)
