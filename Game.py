@@ -1,11 +1,13 @@
-import pygame
-import sys
 import os
+import sys
+
+import pygame
 
 
 def terminate():
     pygame.quit()
     sys.exit()
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -67,7 +69,7 @@ class Player(pygame.sprite.Sprite):
         self.jump = False
         self.sky = True
 
-    def update(self, func_sound, sound):
+    def update(self):
         keys = pygame.key.get_pressed()
         v = 5
 
@@ -77,7 +79,6 @@ class Player(pygame.sprite.Sprite):
             self.x_speed = 0
 
         if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
-            func_sound(sound)
             self.jump = True
 
         if keys[pygame.K_LEFT]:
@@ -157,22 +158,32 @@ def generate_level(level):
                 Box('wall', x, y)
     return new_player, x, y
 
-def music_level(music_name):
+
+def music_level(music_name, music=True):
     try:
         pygame.mixer.music.load('sounds/' + music_name)
-        pygame.mixer.music.play(-1)
+        if music:
+            pygame.mixer.music.play(-1)
+            pygame.mixer.music.set_volume(0.3)
+        else:
+            pygame.mixer.music.stop()
     except pygame.error:
         print('Не удалось загрузить звуковой файл')
 
-def sound_level(sound_name):
+
+def sound_level(sound_name, sfx=True):
     try:
         sound = pygame.mixer.Sound('sounds/' + sound_name)
-        sound.play()
+        if sfx:
+            sound.play()
+            sound.set_volume(0.6)
+        else:
+            sound.stop()
     except pygame.error:
         print('Не удалось загрузить звуковой файл')
 
-def game(screen):
-    music_level('soundtrek1.mp3')
+
+def game(screen, sfx=True):
     filename = 'level1.txt'
     if not os.path.exists('levels/' + filename):
         print(f"Файл с уровнем '{filename}' не найден")
@@ -183,13 +194,13 @@ def game(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+            if event.type == pygame.KEYDOWN and (event.key == pygame.K_UP or event.key == pygame.K_SPACE):
+                sound_level('sfx-13.mp3', sfx)
         screen.fill((0, 0, 0))
-        player_group.update(sound_level, 'sfx-13.mp3')
+        player_group.update()
         sky_group.draw(screen)
         tiles_group.draw(screen)
         box_group.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
-
-game(screen)
