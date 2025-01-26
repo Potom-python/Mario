@@ -3,6 +3,8 @@ import sys
 
 import pygame
 
+from Game import game, music_level
+
 pygame.init()
 FPS = 30
 size = width, height = 1000, 1000
@@ -70,7 +72,7 @@ def draw(n, intro_text):
     return font, text_coord, schet_anim, buttons_sprites
 
 
-def start_screen():
+def start_screen(music=True, sfx=True):
     intro_text = ["Игра про марио", "",
                   "Перемещение героя происходит по нажатию стрелочек",
                   "Перемещение по меню с помощью стрелочек, чтобы выбрать enter", "",
@@ -79,6 +81,7 @@ def start_screen():
                   "ВЫХОД"]
     font, text_coord, schet_anim, buttons_sprites = draw(5, intro_text)
     ButtonAnim(210, buttons_sprites)
+    music_level('soundtrek1.mp3', music)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -116,7 +119,9 @@ def start_screen():
                         schet_anim = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 if schet_anim == 0 or schet_anim == -3:
-                    pass
+                    size3 = 1000, 325
+                    screen3 = pygame.display.set_mode(size3)
+                    game(screen3, sfx)
                 elif schet_anim == 1 or schet_anim == -2:
                     screen.fill((0, 0, 0))
                     settings()
@@ -127,7 +132,7 @@ def start_screen():
             clock.tick(FPS)
 
 
-def settings():
+def settings(music=True, sfx=True):
     intro_text = ["НАСТРОЙКИ", "", "",
                   "МУЗЫКА",
                   "SFX",
@@ -174,12 +179,24 @@ def settings():
                         schet_anim = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 if schet_anim == 0 or schet_anim == -3:
-                    music_state = 'OFF' if music_state == 'ON' else 'ON'
+                    if music_state == 'ON':
+                        music_state = 'OFF'
+                        music = False
+                        music_level('soundtrek1.mp3', music)
+                    else:
+                        music_state = 'ON'
+                        music = True
+                        music_level('soundtrek1.mp3', music)
                 elif schet_anim == 1 or schet_anim == -2:
-                    sfx_state = 'OFF' if sfx_state == 'ON' else 'ON'
+                    if sfx_state == 'ON':
+                        sfx_state = 'OFF'
+                        sfx = False
+                    else:
+                        sfx_state = 'ON'
+                        sfx = True
                 elif schet_anim == 2 or schet_anim == -1:
                     screen.fill((0, 0, 0))
-                    start_screen()
+                    start_screen(music, sfx)
             screen.fill((255, 255, 255))
             draw(3, intro_text)
             buttons_sprites.draw(screen)
