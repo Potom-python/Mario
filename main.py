@@ -1,9 +1,10 @@
-import pygame
-import sys
 import os
+import sys
+
+import pygame
 
 pygame.init()
-FPS = 60
+FPS = 30
 size = width, height = 1000, 1000
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
@@ -30,7 +31,7 @@ def load_image(name, colorkey=None):
     return image
 
 
-class Button_def(pygame.sprite.Sprite):
+class ButtonDef(pygame.sprite.Sprite):
     def __init__(self, top, *group):
         super().__init__(*group)
         self.image = pygame.transform.scale(load_image("button_grey.png", -1), (25, 25))
@@ -39,7 +40,7 @@ class Button_def(pygame.sprite.Sprite):
         self.rect.top = top
 
 
-class Button_anim(pygame.sprite.Sprite):
+class ButtonAnim(pygame.sprite.Sprite):
     def __init__(self, top, *group):
         super().__init__(*group)
         self.schet_anim = 0
@@ -49,74 +50,35 @@ class Button_anim(pygame.sprite.Sprite):
         self.rect.top = top
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(all_sprites)
-        self.image = load_image('mario1.png')
-        self.rect = self.image.get_rect()
-        self.rect.x = 20
-        self.rect.y = height - self.rect.height
-        self.y_speed = 0
-        self.grav = 1
-        self.jump = False
-
-    def update(self):
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += 5
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= 5
-
-        if self.jump:
-            self.y_speed += self.grav
-            self.rect.y += self.y_speed
-
-        if self.rect.bottom >= height:
-            self.jump = False
-            self.rect.bottom = height
-            self.y_speed = 0
-
-    def jump_act(self):
-        if not self.jump:
-            self.jump = True
-            self.y_speed = -15
-
-
-all_sprites = pygame.sprite.Group()
-player = Player()
-
-def start_screen():
-    intro_text = ["Игра про марио", "",
-                  "Перемещение героя происходит по нажатию стрелочек",
-                  "Перемещение по меню с помощью стрелочек, чтобы выбрать enter", "",
-                  "Играть",
-                  "Настройки",
-                  "Выход"]
+def draw(n, intro_text):
     fon = pygame.transform.scale(load_image('fon_mar.jpg'), size)
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
     text_coord = 50
     schet_anim = 0
     buttons_sprites = pygame.sprite.Group()
-    for line in intro_text[:5]:
+    for i, line in enumerate(intro_text):
         string_rendered = font.render(line, 1, pygame.Color('black'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
         intro_rect.x = 100
+        if i >= n:
+            ButtonDef(text_coord, buttons_sprites)
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
-    for line in intro_text[5:]:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 100
-        Button_def(text_coord, buttons_sprites)
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-    Button_anim(210, buttons_sprites)
+    return font, text_coord, schet_anim, buttons_sprites
+
+
+def start_screen():
+    intro_text = ["Игра про марио", "",
+                  "Перемещение героя происходит по нажатию стрелочек",
+                  "Перемещение по меню с помощью стрелочек, чтобы выбрать enter", "",
+                  "ИГРАТЬ",
+                  "НАСТРОЙКИ",
+                  "ВЫХОД"]
+    font, text_coord, schet_anim, buttons_sprites = draw(5, intro_text)
+    ButtonAnim(210, buttons_sprites)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -125,38 +87,39 @@ def start_screen():
                 if event.key == pygame.K_UP:
                     schet_anim -= 1
                     if schet_anim == 0 or schet_anim == -3:
-                        Button_def(240, buttons_sprites)
-                        Button_anim(210, buttons_sprites)
+                        ButtonDef(240, buttons_sprites)
+                        ButtonAnim(210, buttons_sprites)
                     elif schet_anim == 1 or schet_anim == -2:
-                        Button_def(270, buttons_sprites)
-                        Button_anim(240, buttons_sprites)
+                        ButtonDef(273, buttons_sprites)
+                        ButtonAnim(240, buttons_sprites)
                     elif schet_anim == 2 or schet_anim == -1:
-                        Button_def(210, buttons_sprites)
-                        Button_anim(270, buttons_sprites)
+                        ButtonDef(210, buttons_sprites)
+                        ButtonAnim(273, buttons_sprites)
                     else:
                         schet_anim = -1
-                        Button_def(210, buttons_sprites)
-                        Button_anim(270, buttons_sprites)
+                        ButtonDef(210, buttons_sprites)
+                        ButtonAnim(273, buttons_sprites)
                 elif event.key == pygame.K_DOWN:
                     schet_anim += 1
                     if schet_anim == 0 or schet_anim == -3:
-                        Button_def(270, buttons_sprites)
-                        Button_anim(210, buttons_sprites)
+                        ButtonDef(273, buttons_sprites)
+                        ButtonAnim(210, buttons_sprites)
                     elif schet_anim == 1 or schet_anim == -2:
-                        Button_def(210, buttons_sprites)
-                        Button_anim(240, buttons_sprites)
+                        ButtonDef(210, buttons_sprites)
+                        ButtonAnim(240, buttons_sprites)
                     elif schet_anim == 2 or schet_anim == -1:
-                        Button_def(240, buttons_sprites)
-                        Button_anim(270, buttons_sprites)
+                        ButtonDef(240, buttons_sprites)
+                        ButtonAnim(273, buttons_sprites)
                     else:
-                        Button_def(270, buttons_sprites)
-                        Button_anim(210, buttons_sprites)
+                        ButtonDef(273, buttons_sprites)
+                        ButtonAnim(210, buttons_sprites)
                         schet_anim = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 if schet_anim == 0 or schet_anim == -3:
-                    return
-                elif schet_anim == 1 or schet_anim == -2:
                     pass
+                elif schet_anim == 1 or schet_anim == -2:
+                    screen.fill((0, 0, 0))
+                    settings()
                 elif schet_anim == 2 or schet_anim == -1:
                     terminate()
             buttons_sprites.draw(screen)
@@ -164,23 +127,69 @@ def start_screen():
             clock.tick(FPS)
 
 
+def settings():
+    intro_text = ["НАСТРОЙКИ", "", "",
+                  "МУЗЫКА",
+                  "SFX",
+                  "ВЫХОД"]
+    font, text_coord, schet_anim, buttons_sprites = draw(3, intro_text)
+    music_state = 'ON'
+    sfx_state = 'ON'
+
+    ButtonAnim(153, buttons_sprites)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    schet_anim -= 1
+                    if schet_anim == 0 or schet_anim == -3:
+                        ButtonDef(183, buttons_sprites)
+                        ButtonAnim(153, buttons_sprites)
+                    elif schet_anim == 1 or schet_anim == -2:
+                        ButtonDef(213, buttons_sprites)
+                        ButtonAnim(183, buttons_sprites)
+                    elif schet_anim == 2 or schet_anim == -1:
+                        ButtonDef(153, buttons_sprites)
+                        ButtonAnim(213, buttons_sprites)
+                    else:
+                        schet_anim = -1
+                        ButtonDef(153, buttons_sprites)
+                        ButtonAnim(213, buttons_sprites)
+                elif event.key == pygame.K_DOWN:
+                    schet_anim += 1
+                    if schet_anim == 0 or schet_anim == -3:
+                        ButtonDef(213, buttons_sprites)
+                        ButtonAnim(153, buttons_sprites)
+                    elif schet_anim == 1 or schet_anim == -2:
+                        ButtonDef(153, buttons_sprites)
+                        ButtonAnim(183, buttons_sprites)
+                    elif schet_anim == 2 or schet_anim == -1:
+                        ButtonDef(183, buttons_sprites)
+                        ButtonAnim(213, buttons_sprites)
+                    else:
+                        ButtonDef(213, buttons_sprites)
+                        ButtonAnim(153, buttons_sprites)
+                        schet_anim = 0
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                if schet_anim == 0 or schet_anim == -3:
+                    music_state = 'OFF' if music_state == 'ON' else 'ON'
+                elif schet_anim == 1 or schet_anim == -2:
+                    sfx_state = 'OFF' if sfx_state == 'ON' else 'ON'
+                elif schet_anim == 2 or schet_anim == -1:
+                    screen.fill((0, 0, 0))
+                    start_screen()
+            screen.fill((255, 255, 255))
+            draw(3, intro_text)
+            buttons_sprites.draw(screen)
+            music_text = font.render(music_state, True, pygame.Color('black'))
+            sfx_text = font.render(sfx_state, True, pygame.Color('black'))
+            screen.blit(music_text, (350, 153))
+            screen.blit(sfx_text, (350, 183))
+
+            pygame.display.flip()
+            clock.tick(FPS)
+
+
 start_screen()
-
-running = True
-
-while running:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                player.jump_act()
-
-    player.update()
-    screen.fill((100, 150, 255))
-    clock.tick(FPS)
-    all_sprites.draw(screen)
-    pygame.display.flip()
-
-pygame.quit()
