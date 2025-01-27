@@ -59,7 +59,7 @@ class Sky(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.image = player_image
+        self.image = mario_right_images['mario1']
         self.rect = self.image.get_rect()
         self.rect.x = tile_width * pos_x
         self.rect.y = tile_height * pos_y - 19
@@ -68,23 +68,56 @@ class Player(pygame.sprite.Sprite):
         self.grav = 1
         self.jump = False
         self.sky = True
+        self.state_move = 1
+        self.side = 'right'
+        self.on_bottom = True
 
     def update(self):
         keys = pygame.key.get_pressed()
         v = 5
-
         if keys[pygame.K_RIGHT]:
+            if self.state_move < 0:
+                self.state_move = 1
+            if self.state_move == 1:
+                self.image = mario_right_images['mario2']
+                self.state_move = 2
+            elif self.state_move == 2:
+                self.image = mario_right_images['mario3']
+                self.state_move = 3
+            elif self.state_move == 3:
+                self.image = mario_right_images['mario4']
+                self.state_move = 1
             self.x_speed = v
+            self.side = 'right'
+        elif keys[pygame.K_LEFT]:
+            if self.state_move > 0:
+                self.state_move = -1
+            if self.state_move == -1:
+                self.image = mario_left_images['mario2']
+                self.state_move = -2
+            elif self.state_move == -2:
+                self.image = mario_left_images['mario3']
+                self.state_move = -3
+            elif self.state_move == -3:
+                self.image = mario_left_images['mario4']
+                self.state_move = -1
+            self.x_speed = -v
+            self.side = 'left'
         else:
+            if self.state_move >= 1:
+                self.image = mario_right_images['mario1']
+            elif self.state_move <= -1:
+                self.image = mario_left_images['mario1']
             self.x_speed = 0
 
         if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
+            if self.side == 'right':
+                self.image = mario_right_images['mario5']
+            else:
+                self.image = mario_left_images['mario5']
+            self.state_move = 0
+            self.on_bottom = False
             self.jump = True
-
-        if keys[pygame.K_LEFT]:
-            self.x_speed = -v
-        elif not keys[pygame.K_RIGHT]:
-            self.x_speed = 0
 
         if self.jump and not self.sky:
             self.y_speed = -15
@@ -114,6 +147,14 @@ class Player(pygame.sprite.Sprite):
                     self.sky = False
                     self.jump = False
                     self.y_speed = 0
+                    if not self.on_bottom:
+                        if self.side == 'right':
+                            self.image = mario_right_images['mario1']
+                            self.state_move = 1
+                        else:
+                            self.image = mario_left_images['mario1']
+                            self.state_move = -1
+                        self.on_bottom = True
 
                 if y_speed < 0:
                     self.rect.top = box.rect.bottom
@@ -135,10 +176,23 @@ FPS = 30
 clock = pygame.time.Clock()
 tile_images = {
     'wall': pygame.transform.scale(load_image('wall.png', -1), (25, 25)),
-    'cloud': pygame.transform.scale(load_image('cloud.jpg'), (25, 25)),
+    'cloud': pygame.transform.scale(load_image('sprites.png'), (100, 50)),
+}
+mario_right_images = {
+    'mario1': pygame.transform.scale(load_image('mario1.png', -1), (20, 20)),
+    'mario2': pygame.transform.scale(load_image('mario12.png', -1), (20, 20)),
+    'mario3': pygame.transform.scale(load_image('mario13.png', -1), (20, 20)),
+    'mario4': pygame.transform.scale(load_image('mario14.png', -1), (20, 20)),
+    'mario5': pygame.transform.scale(load_image('mario15.png', -1), (20, 20))
+}
+mario_left_images = {
+    'mario1': pygame.transform.scale(load_image('mario2.png', -1), (20, 20)),
+    'mario2': pygame.transform.scale(load_image('mario22.png', -1), (20, 20)),
+    'mario3': pygame.transform.scale(load_image('mario23.png', -1), (20, 20)),
+    'mario4': pygame.transform.scale(load_image('mario24.png', -1), (20, 20)),
+    'mario5': pygame.transform.scale(load_image('mario25.png'), (20, 20))
 }
 sky_image = pygame.transform.scale(load_image('sky.png'), (25, 25))
-player_image = load_image('mario.png', -1)
 
 tile_width = tile_height = 25
 
@@ -156,6 +210,8 @@ def generate_level(level):
                 new_player = Player(x, y)
             elif level[y][x] == '%':
                 Box('wall', x, y)
+            elif level[y][x] == '!':
+                Tile('cloud', x, y)
     return new_player, x, y
 
 
