@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-from Game import game, music_level
+from Game import music_level, game
 
 pygame.init()
 FPS = 30
@@ -50,6 +50,64 @@ class ButtonAnim(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 10
         self.rect.top = top
+
+
+class Level:
+    def __init__(self, x, y, width, height, number):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.number = number
+
+    def draw(self, screen):
+        font = pygame.font.SysFont("Arial", 30)
+        pygame.draw.rect(screen, (255, 255, 255), self.rect)
+        text = font.render(str(self.number), True, (0, 0, 0))
+        text_rect = text.get_rect(center=self.rect.center)
+        screen.blit(text, text_rect)
+
+
+def menu_levels(sfx):
+    fon = pygame.transform.scale(load_image('fon_mar.jpg'), size)
+
+    levels = [
+        Level(100, 100, 100, 100, 1),
+        Level(300, 100, 100, 100, 2),
+        Level(500, 100, 100, 100, 3),
+        Level(100, 300, 100, 100, "Выход")
+    ]
+
+    selected_level = levels[0]
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    if selected_level.number == "Выход":
+                        start_screen()
+                    else:
+                        size3 = 1000, 325
+                        screen3 = pygame.display.set_mode(size3)
+                        game(screen3,f'level{selected_level.number}.txt', sfx)
+                elif event.key == pygame.K_LEFT:
+                    current_index = levels.index(selected_level)
+                    new_index = (current_index - 1) % len(levels)
+                    selected_level = levels[new_index]
+                elif event.key == pygame.K_RIGHT:
+                    current_index = levels.index(selected_level)
+                    new_index = (current_index + 1) % len(levels)
+                    selected_level = levels[new_index]
+
+        screen.blit(fon, (0, 0))
+
+        for level in levels:
+            level.draw(screen)
+            if level == selected_level:
+                pygame.draw.rect(screen, (0, 255, 0), level.rect, 2)
+
+        pygame.display.flip()
+        pygame.time.Clock().tick(60)
 
 
 def draw(n, intro_text):
@@ -119,9 +177,7 @@ def start_screen(music=True, sfx=True):
                         schet_anim = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 if schet_anim == 0 or schet_anim == -3:
-                    size3 = 1000, 325
-                    screen3 = pygame.display.set_mode(size3)
-                    game(screen3, sfx)
+                    menu_levels(sfx)
                 elif schet_anim == 1 or schet_anim == -2:
                     screen.fill((0, 0, 0))
                     settings()

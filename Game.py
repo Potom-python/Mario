@@ -1,6 +1,6 @@
 import os
-import sys
 import random
+import sys
 
 import pygame
 
@@ -67,7 +67,7 @@ class LuckyBlock(pygame.sprite.Sprite):
         self.inter = 200
 
     def update(self):
-        current =pygame.time.get_ticks()
+        current = pygame.time.get_ticks()
         if current - self.last_change >= self.inter:
             self.last_change = current
             if self.image == luckyblock_images['block1']:
@@ -274,8 +274,8 @@ def sound_level(sound_name, sfx=True):
         print('Не удалось загрузить звуковой файл')
 
 
-def game(screen, sfx=True):
-    filename = 'level1.txt'
+def game(screen, number_level, sfx=True):
+    filename = number_level
     if not os.path.exists('levels/' + filename):
         print(f"Файл с уровнем '{filename}' не найден")
         sys.exit()
