@@ -1,5 +1,6 @@
 import os
 import sys
+import random
 
 import pygame
 
@@ -54,6 +55,27 @@ class Sky(pygame.sprite.Sprite):
         self.image = sky_image
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
+
+
+class LuckyBlock(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(box_group, all_sprites)
+        self.image = luckyblock_images['block1']
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+        self.last_change = pygame.time.get_ticks()
+        self.inter = 200
+
+    def update(self):
+        current =pygame.time.get_ticks()
+        if current - self.last_change >= self.inter:
+            self.last_change = current
+            if self.image == luckyblock_images['block1']:
+                self.image = luckyblock_images['block2']
+            elif self.image == luckyblock_images['block2']:
+                self.image = luckyblock_images['block3']
+            else:
+                self.image = luckyblock_images['block1']
 
 
 class Player(pygame.sprite.Sprite):
@@ -176,7 +198,9 @@ FPS = 30
 clock = pygame.time.Clock()
 tile_images = {
     'wall': pygame.transform.scale(load_image('wall.png', -1), (25, 25)),
-    'cloud': pygame.transform.scale(load_image('sprites.png'), (100, 50)),
+    'cloud1': pygame.transform.scale(load_image('cloud1.png'), (100, 50)),
+    'cloud2': pygame.transform.scale(load_image('cloud2.png'), (70, 50)),
+    'grass': pygame.transform.scale(load_image('grass.png'), (100, 50))
 }
 mario_right_images = {
     'mario1': pygame.transform.scale(load_image('mario1.png', -1), (20, 20)),
@@ -191,6 +215,11 @@ mario_left_images = {
     'mario3': pygame.transform.scale(load_image('mario23.png', -1), (20, 20)),
     'mario4': pygame.transform.scale(load_image('mario24.png', -1), (20, 20)),
     'mario5': pygame.transform.scale(load_image('mario25.png'), (20, 20))
+}
+luckyblock_images = {
+    'block1': pygame.transform.scale(load_image('luckyblock1.png', -1), (25, 25)),
+    'block2': pygame.transform.scale(load_image('luckyblock2.png', -1), (25, 25)),
+    'block3': pygame.transform.scale(load_image('luckyblock3.png', -1), (25, 25)),
 }
 sky_image = pygame.transform.scale(load_image('sky.png'), (25, 25))
 
@@ -211,7 +240,13 @@ def generate_level(level):
             elif level[y][x] == '%':
                 Box('wall', x, y)
             elif level[y][x] == '!':
-                Tile('cloud', x, y)
+                Sky(x, y)
+                Tile(random.choice(['cloud1', 'cloud2']), x, y)
+            elif level[y][x] == '?':
+                LuckyBlock(x, y)
+            elif level[y][x] == ',':
+                Sky(x, y)
+                Tile('grass', x, y)
     return new_player, x, y
 
 
@@ -254,6 +289,7 @@ def game(screen, sfx=True):
                 sound_level('sfx-13.mp3', sfx)
         screen.fill((0, 0, 0))
         player_group.update()
+        box_group.update()
         sky_group.draw(screen)
         tiles_group.draw(screen)
         box_group.draw(screen)
