@@ -57,25 +57,66 @@ class Sky(pygame.sprite.Sprite):
             tile_width * pos_x, tile_height * pos_y)
 
 
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__()
+        self.image = coin_image['coin1']
+        self.rect = self.image.get_rect(center=(pos_x, pos_y))
+        self.y_speed = -10
+        self.start = pygame.time.get_ticks()
+        self.exist = 300
+
+    def update(self):
+        if self.image == coin_image['coin1']:
+            self.image = coin_image['coin2']
+        elif self.image == coin_image['coin2']:
+            self.image = coin_image['coin3']
+        elif self.image == coin_image['coin3']:
+            self.image = coin_image['coin4']
+        else:
+            self.image = coin_image['coin1']
+        self.y_speed += 1
+        self.rect += self.y_speed
+        if pygame.time.get_ticks() - self.start >= self.exist:
+            self.kill()
+
+
 class LuckyBlock(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
-        super().__init__(box_group, all_sprites)
+        super().__init__(lucky_group, all_sprites)
         self.image = luckyblock_images['block1']
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
         self.last_change = pygame.time.get_ticks()
         self.inter = 200
+        self.changed = False
 
     def update(self):
-        current = pygame.time.get_ticks()
-        if current - self.last_change >= self.inter:
-            self.last_change = current
-            if self.image == luckyblock_images['block1']:
-                self.image = luckyblock_images['block2']
-            elif self.image == luckyblock_images['block2']:
-                self.image = luckyblock_images['block3']
-            else:
-                self.image = luckyblock_images['block1']
+        if not self.changed:
+            current = pygame.time.get_ticks()
+            if current - self.last_change >= self.inter:
+                self.last_change = current
+                if self.image == luckyblock_images['block1']:
+                    self.image = luckyblock_images['block2']
+                elif self.image == luckyblock_images['block2']:
+                    self.image = luckyblock_images['block3']
+                else:
+                    self.image = luckyblock_images['block1']
+        else:
+            self.image = luckyblock_images['block4']
+
+
+class Camera:
+    def __init__(self, width):
+        self.width = width
+        self.x = 0
+
+    def apply(self, object):
+        object.rect.x += self.x
+
+    def update(self, target):
+        if target.rect.centerx > 500:
+            self.x = -(target.rect.x + target.rect.w // 2 - 1005 // 2)
 
 
 class Player(pygame.sprite.Sprite):
@@ -155,6 +196,8 @@ class Player(pygame.sprite.Sprite):
         self.collide(0, self.y_speed, box_group)
 
         self.rect.x += self.x_speed
+        if self.rect.x < 0:
+            self.rect.x = 0
         self.collide(self.x_speed, 0, box_group)
 
     def collide(self, x_speed, y_speed, box_group):
@@ -184,12 +227,42 @@ class Player(pygame.sprite.Sprite):
                     self.rect.top = box.rect.bottom
                     self.y_speed = 0
 
+        for lucky in lucky_group:
+            if pygame.sprite.collide_rect(self, lucky):
+                if x_speed > 0:
+                    self.rect.right = lucky.rect.left
+
+                if x_speed < 0:
+                    self.rect.left = lucky.rect.right
+
+                if y_speed > 0:
+                    self.rect.bottom = lucky.rect.top
+                    self.sky = False
+                    self.jump = False
+                    self.y_speed = 0
+                    if not self.on_bottom:
+                        if self.side == 'right':
+                            self.image = mario_right_images['mario1']
+                            self.state_move = 1
+                        else:
+                            self.image = mario_left_images['mario1']
+                            self.state_move = -1
+                        self.on_bottom = True
+
+                if y_speed < 0:
+                    if not lucky.changed:
+                        sound_level('sfx-5.mp3')
+                    lucky.changed = True
+                    self.rect.top = lucky.rect.bottom
+                    self.y_speed = 0
+
 
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 sky_group = pygame.sprite.Group()
 box_group = pygame.sprite.Group()
+lucky_group = pygame.sprite.Group()
 
 pygame.init()
 pygame.mixer.init()
@@ -200,9 +273,11 @@ FPS = 30
 clock = pygame.time.Clock()
 tile_images = {
     'wall': pygame.transform.scale(load_image('wall.png', -1), (25, 25)),
+    'column1': pygame.transform.scale(load_image('column1.png', -1), (25, 60)),
     'cloud1': pygame.transform.scale(load_image('cloud1.png'), (100, 50)),
     'cloud2': pygame.transform.scale(load_image('cloud2.png'), (70, 50)),
-    'grass': pygame.transform.scale(load_image('grass.png'), (100, 50))
+    'grass1': pygame.transform.scale(load_image('grass1.png'), (100, 50)),
+    'grass2': pygame.transform.scale(load_image('grass1.png'), (100, 50))
 }
 mario_right_images = {
     'mario1': pygame.transform.scale(load_image('mario1.png', -1), (20, 20)),
@@ -222,8 +297,15 @@ luckyblock_images = {
     'block1': pygame.transform.scale(load_image('luckyblock1.png', -1), (25, 25)),
     'block2': pygame.transform.scale(load_image('luckyblock2.png', -1), (25, 25)),
     'block3': pygame.transform.scale(load_image('luckyblock3.png', -1), (25, 25)),
+    'block4': pygame.transform.scale(load_image('changed_lucky_block.png', -1), (25, 25))
 }
 sky_image = pygame.transform.scale(load_image('sky.png'), (25, 25))
+coin_image = {
+    'coin1': pygame.transform.scale(load_image('coin1.png', -1), (10, 10)),
+    'coin2': pygame.transform.scale(load_image('coin2.png', -1), (10, 10)),
+    'coin3': pygame.transform.scale(load_image('coin3.png', -1), (10, 10)),
+    'coin4': pygame.transform.scale(load_image('coin4.png', -1), (10, 10))
+}
 
 tile_width = tile_height = 25
 
@@ -248,7 +330,10 @@ def generate_level(level):
                 LuckyBlock(x, y)
             elif level[y][x] == ',':
                 Sky(x, y)
-                Tile('grass', x, y)
+                Tile(random.choice(['grass1', 'grass2']), x, y)
+            elif level[y][x] == '|':
+                Sky(x, y)
+                Box('column1', x, y)
     return new_player, x, y
 
 
@@ -276,9 +361,10 @@ def sound_level(sound_name, sfx=True):
         print('Не удалось загрузить звуковой файл')
 
 
-def pause_menu():
+def pause_menu(sfx):
     paused = True
     background = screen.copy()
+    sound_level('sfx-1.mp3', sfx)
 
     while paused:
         for event in pygame.event.get():
@@ -315,18 +401,23 @@ def game(screen, number_level, sfx=True):
         sys.exit()
     level = load_level(filename)
     player, level_x, level_y = generate_level(level)
+    camera = Camera(width)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                pause_menu()
+                pause_menu(sfx)
 
         screen.fill((0, 0, 0))
         player_group.update(sfx)
-        box_group.update()
+        camera.update(player)
+        lucky_group.update()
+        for sprite in all_sprites:
+            camera.apply(sprite)
         sky_group.draw(screen)
         tiles_group.draw(screen)
+        lucky_group.draw(screen)
         box_group.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
