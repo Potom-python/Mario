@@ -274,6 +274,38 @@ def sound_level(sound_name, sfx=True):
         print('Не удалось загрузить звуковой файл')
 
 
+def pause_menu():
+    paused = True
+    background = screen.copy()
+
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    paused = False
+                elif event.key == pygame.K_q:
+                    terminate()
+        screen.blit(background, (0, 0))
+
+        font = pygame.font.SysFont(None, 40)
+        text = font.render('Пауза', True, (255, 255, 255))
+        text_rect = text.get_rect(center=(width // 2, height // 2 - 20))
+        screen.blit(text, text_rect)
+
+        continue_text = font.render('Нажмите ESC для продолжения', True, (255, 255, 255))
+        continue_rect = continue_text.get_rect(center=(width // 2, height // 2 + 20))
+        screen.blit(continue_text, continue_rect)
+
+        exit_text = font.render('Нажмите Q для выхода из игры', True, (255, 255, 255))
+        exit_rect = exit_text.get_rect(center=(width // 2, height // 2 + 60))
+        screen.blit(exit_text, exit_rect)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def game(screen, number_level, sfx=True):
     filename = number_level
     if not os.path.exists('levels/' + filename):
@@ -287,6 +319,9 @@ def game(screen, number_level, sfx=True):
                 terminate()
             if event.type == pygame.KEYDOWN and (event.key == pygame.K_UP or event.key == pygame.K_SPACE):
                 sound_level('sfx-13.mp3', sfx)
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                pause_menu()
+
         screen.fill((0, 0, 0))
         player_group.update()
         box_group.update()

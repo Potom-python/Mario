@@ -58,7 +58,7 @@ class Level:
         self.number = number
 
     def draw(self, screen):
-        font = pygame.font.SysFont("Arial", 30)
+        font = pygame.font.SysFont(None, 30)
         pygame.draw.rect(screen, (255, 255, 255), self.rect)
         text = font.render(str(self.number), True, (0, 0, 0))
         text_rect = text.get_rect(center=self.rect.center)
