@@ -94,7 +94,7 @@ class Player(pygame.sprite.Sprite):
         self.side = 'right'
         self.on_bottom = True
 
-    def update(self):
+    def update(self, sfx):
         keys = pygame.key.get_pressed()
         v = 5
         if keys[pygame.K_RIGHT]:
@@ -145,6 +145,7 @@ class Player(pygame.sprite.Sprite):
         if self.jump and not self.sky:
             self.y_speed = -15
             self.collide(0, self.y_speed, box_group)
+            sound_level('sfx-13.mp3', sfx)
 
         if self.sky:
             self.y_speed += self.grav
@@ -291,15 +292,15 @@ def pause_menu():
         screen.blit(background, (0, 0))
 
         font = pygame.font.SysFont(None, 40)
-        text = font.render('Пауза', True, (255, 255, 255))
+        text = font.render('Пауза', True, (0, 255, 0))
         text_rect = text.get_rect(center=(width // 2, height // 2 - 20))
         screen.blit(text, text_rect)
 
-        continue_text = font.render('Нажмите ESC для продолжения', True, (255, 255, 255))
+        continue_text = font.render('Нажмите ESC для продолжения', True, (0, 255, 0))
         continue_rect = continue_text.get_rect(center=(width // 2, height // 2 + 20))
         screen.blit(continue_text, continue_rect)
 
-        exit_text = font.render('Нажмите Q для выхода из игры', True, (255, 255, 255))
+        exit_text = font.render('Нажмите Q для выхода из игры', True, (0, 255, 0))
         exit_rect = exit_text.get_rect(center=(width // 2, height // 2 + 60))
         screen.blit(exit_text, exit_rect)
 
@@ -318,13 +319,11 @@ def game(screen, number_level, sfx=True):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            if event.type == pygame.KEYDOWN and (event.key == pygame.K_UP or event.key == pygame.K_SPACE):
-                sound_level('sfx-13.mp3', sfx)
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pause_menu()
 
         screen.fill((0, 0, 0))
-        player_group.update()
+        player_group.update(sfx)
         box_group.update()
         sky_group.draw(screen)
         tiles_group.draw(screen)
