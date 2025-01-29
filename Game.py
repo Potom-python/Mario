@@ -133,13 +133,14 @@ class Player(pygame.sprite.Sprite):
             self.x_speed = 0
 
         if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
+            self.jump = True
+        if self.jump:
             if self.side == 'right':
                 self.image = mario_right_images['mario5']
             else:
                 self.image = mario_left_images['mario5']
             self.state_move = 0
             self.on_bottom = False
-            self.jump = True
 
         if self.jump and not self.sky:
             self.y_speed = -15
