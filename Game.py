@@ -60,21 +60,21 @@ class Sky(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(coin_group, all_sprites)
-        self.image = coin_image['coin1']
+        self.image = coin_images['coin1']
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
         self.y_speed = -10
         self.start = pygame.time.get_ticks()
-        self.exist = 300
+        self.exist = 500
 
     def update(self):
-        if self.image == coin_image['coin1']:
-            self.image = coin_image['coin2']
-        elif self.image == coin_image['coin2']:
-            self.image = coin_image['coin3']
-        elif self.image == coin_image['coin3']:
-            self.image = coin_image['coin4']
+        if self.image == coin_images['coin1']:
+            self.image = coin_images['coin2']
+        elif self.image == coin_images['coin2']:
+            self.image = coin_images['coin3']
+        elif self.image == coin_images['coin3']:
+            self.image = coin_images['coin4']
         else:
-            self.image = coin_image['coin1']
+            self.image = coin_images['coin1']
         self.y_speed += 1
         self.rect.y += self.y_speed
         if pygame.time.get_ticks() - self.start >= self.exist:
@@ -115,8 +115,49 @@ class Camera:
         object.rect.x += self.x
 
     def update(self, target):
-        if target.rect.centerx > 500:
-            self.x = -(target.rect.x + target.rect.w // 2 - 1005 // 2)
+
+        self.x = -(target.rect.x + target.rect.w // 2 - self.width // 2)
+
+
+class MagicMash(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(magic_mash_group, all_sprites)
+        self.image = magic_mash_image
+        self.rect = self.image.get_rect(center=(pos_x, pos_y))
+        self.x_speed = 4
+        self.y_speed = 0
+        self.grav = 0.5
+
+    def update(self):
+        self.apply_gravity()
+        self.x_collisions(box_group)
+        self.y_collisions(box_group)
+
+    def apply_gravity(self):
+        self.y_speed += self.grav
+
+    def x_collisions(self, box_group):
+        temp_rect = self.rect.copy()
+        temp_rect.x += self.x_speed
+
+        for box in box_group:
+            if temp_rect.colliderect(box.rect):
+               self.x_speed *= -1
+               return
+
+        self.rect.x += self.x_speed
+
+    def y_collisions(self, box_group):
+        temp_rect = self.rect.copy()
+        temp_rect.y += self.y_speed
+
+        for box in box_group:
+            if temp_rect.colliderect(box.rect):
+                if self.y_speed > 0:
+                     self.rect.bottom = box.rect.top
+                self.y_speed = 0
+                return
+        self.rect.y += self.y_speed
 
 
 class Player(pygame.sprite.Sprite):
@@ -252,8 +293,9 @@ class Player(pygame.sprite.Sprite):
                 if y_speed < 0:
                     if not lucky.changed:
                         sound_level('sfx-5.mp3')
+                        Coin(lucky.rect.centerx, lucky.rect.centery)
+                        MagicMash(lucky.rect.centerx, lucky.rect.centery)
                     lucky.changed = True
-                    Coin(lucky.rect.centerx, lucky.rect.centery)
                     self.rect.top = lucky.rect.bottom
                     self.y_speed = 0
 
@@ -265,6 +307,7 @@ sky_group = pygame.sprite.Group()
 box_group = pygame.sprite.Group()
 lucky_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
+magic_mash_group = pygame.sprite.Group()
 
 pygame.init()
 pygame.mixer.init()
@@ -302,7 +345,8 @@ luckyblock_images = {
     'block4': pygame.transform.scale(load_image('changed_lucky_block.png', -1), (25, 25))
 }
 sky_image = pygame.transform.scale(load_image('sky.png'), (25, 25))
-coin_image = {
+magic_mash_image = pygame.transform.scale(load_image('magic_mashroom.png'), (25, 25))
+coin_images = {
     'coin1': pygame.transform.scale(load_image('coin1.png'), (15, 20)),
     'coin2': pygame.transform.scale(load_image('coin2.png'), (15, 20)),
     'coin3': pygame.transform.scale(load_image('coin3.png'), (15, 20)),
@@ -416,11 +460,13 @@ def game(screen, number_level, sfx=True):
         camera.update(player)
         lucky_group.update()
         coin_group.update()
+        magic_mash_group.update()
         for sprite in all_sprites:
             camera.apply(sprite)
         sky_group.draw(screen)
         coin_group.draw(screen)
         tiles_group.draw(screen)
+        magic_mash_group.draw(screen)
         lucky_group.draw(screen)
         box_group.draw(screen)
         player_group.draw(screen)
