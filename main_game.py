@@ -87,9 +87,9 @@ def menu_levels(sfx):
                     if selected_level.number == "Выход":
                         start_screen()
                     else:
-                        size3 = 1000, 325
-                        screen3 = pygame.display.set_mode(size3)
-                        game(screen3,f'level{selected_level.number}.txt', sfx)
+                        size_game = 1000, 325
+                        screen_game = pygame.display.set_mode(size_game)
+                        game(screen_game,f'level{selected_level.number}.txt', sfx)
                 elif event.key == pygame.K_LEFT:
                     current_index = levels.index(selected_level)
                     new_index = (current_index - 1) % len(levels)

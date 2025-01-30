@@ -135,7 +135,7 @@ class Player(pygame.sprite.Sprite):
         self.side = 'right'
         self.on_bottom = True
 
-    def update(self, sfx):
+    def update(self, sfx, number_level):
         keys = pygame.key.get_pressed()
         v = 5
         if keys[pygame.K_RIGHT]:
@@ -396,6 +396,41 @@ def pause_menu(sfx):
         clock.tick(FPS)
 
 
+def game_over_screen():
+    background = screen.copy()
+    font = pygame.font.SysFont(None, 55)
+
+    game_over_text = font.render('GAME OVER', True, (255, 0, 0))
+    game_over_rect = game_over_text.get_rect(center=(width // 2, height // 2 - 20))
+
+    restart_text = font.render('Нажмите R для перезапуска', True, (255, 255, 255))
+    restart_rect = restart_text.get_rect(center=(width // 2, height // 2 + 20))
+
+    exit_text = font.render('Нажмите Q для выхода', True, (255, 255, 255))
+    exit_rect = exit_text.get_rect(center=(width // 2, height // 2 + 60))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    screen.fill((0, 0, 0))
+                    background.fill((0, 0, 0))
+                    return 2
+
+                elif event.key == pygame.K_q:
+                    terminate()
+
+        screen.blit(background, (0, 0))
+        screen.blit(game_over_text, game_over_rect)
+        screen.blit(restart_text, restart_rect)
+        screen.blit(exit_text, exit_rect)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def game(screen, number_level, sfx=True):
     filename = number_level
     if not os.path.exists('levels/' + filename):
@@ -404,6 +439,9 @@ def game(screen, number_level, sfx=True):
     level = load_level(filename)
     player, level_x, level_y = generate_level(level)
     camera = Camera(width)
+
+    game_over = False
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -411,18 +449,31 @@ def game(screen, number_level, sfx=True):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pause_menu(sfx)
 
-        screen.fill((0, 0, 0))
-        player_group.update(sfx)
-        camera.update(player)
-        lucky_group.update()
-        coin_group.update()
-        for sprite in all_sprites:
-            camera.apply(sprite)
-        sky_group.draw(screen)
-        coin_group.draw(screen)
-        tiles_group.draw(screen)
-        lucky_group.draw(screen)
-        box_group.draw(screen)
-        player_group.draw(screen)
+        if not game_over:
+            screen.fill((0, 0, 0))
+            player_group.update(sfx, number_level)
+            camera.update(player)
+            lucky_group.update()
+            coin_group.update()
+            for sprite in all_sprites:
+                camera.apply(sprite)
+            sky_group.draw(screen)
+            coin_group.draw(screen)
+            tiles_group.draw(screen)
+            lucky_group.draw(screen)
+            box_group.draw(screen)
+            player_group.draw(screen)
+
+            if player.rect.y + player.rect.h >= height:
+                game_over = True
+
+        else:
+            game_over = game_over_screen()
+            if game_over == 2:
+                size_game = 1000, 325
+                screen_game = pygame.display.set_mode(size_game)
+                game(screen_game, number_level, sfx)
+                return
+
         pygame.display.flip()
         clock.tick(FPS)
