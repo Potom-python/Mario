@@ -59,7 +59,7 @@ class Sky(pygame.sprite.Sprite):
 
 class Coin(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
-        super().__init__()
+        super().__init__(coin_group, all_sprites)
         self.image = coin_image['coin1']
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
         self.y_speed = -10
@@ -76,7 +76,7 @@ class Coin(pygame.sprite.Sprite):
         else:
             self.image = coin_image['coin1']
         self.y_speed += 1
-        self.rect += self.y_speed
+        self.rect.y += self.y_speed
         if pygame.time.get_ticks() - self.start >= self.exist:
             self.kill()
 
@@ -253,6 +253,7 @@ class Player(pygame.sprite.Sprite):
                     if not lucky.changed:
                         sound_level('sfx-5.mp3')
                     lucky.changed = True
+                    Coin(lucky.rect.centerx, lucky.rect.centery)
                     self.rect.top = lucky.rect.bottom
                     self.y_speed = 0
 
@@ -263,6 +264,7 @@ player_group = pygame.sprite.Group()
 sky_group = pygame.sprite.Group()
 box_group = pygame.sprite.Group()
 lucky_group = pygame.sprite.Group()
+coin_group = pygame.sprite.Group()
 
 pygame.init()
 pygame.mixer.init()
@@ -273,7 +275,7 @@ FPS = 30
 clock = pygame.time.Clock()
 tile_images = {
     'wall': pygame.transform.scale(load_image('wall.png', -1), (25, 25)),
-    'column1': pygame.transform.scale(load_image('column1.png', -1), (25, 60)),
+    'column1': pygame.transform.scale(load_image('column1.png'), (50, 60)),
     'cloud1': pygame.transform.scale(load_image('cloud1.png'), (100, 50)),
     'cloud2': pygame.transform.scale(load_image('cloud2.png'), (70, 50)),
     'grass1': pygame.transform.scale(load_image('grass1.png'), (100, 50)),
@@ -301,10 +303,10 @@ luckyblock_images = {
 }
 sky_image = pygame.transform.scale(load_image('sky.png'), (25, 25))
 coin_image = {
-    'coin1': pygame.transform.scale(load_image('coin1.png', -1), (10, 10)),
-    'coin2': pygame.transform.scale(load_image('coin2.png', -1), (10, 10)),
-    'coin3': pygame.transform.scale(load_image('coin3.png', -1), (10, 10)),
-    'coin4': pygame.transform.scale(load_image('coin4.png', -1), (10, 10))
+    'coin1': pygame.transform.scale(load_image('coin1.png'), (15, 20)),
+    'coin2': pygame.transform.scale(load_image('coin2.png'), (15, 20)),
+    'coin3': pygame.transform.scale(load_image('coin3.png'), (15, 20)),
+    'coin4': pygame.transform.scale(load_image('coin4.png'), (15, 20))
 }
 
 tile_width = tile_height = 25
@@ -413,9 +415,11 @@ def game(screen, number_level, sfx=True):
         player_group.update(sfx)
         camera.update(player)
         lucky_group.update()
+        coin_group.update()
         for sprite in all_sprites:
             camera.apply(sprite)
         sky_group.draw(screen)
+        coin_group.draw(screen)
         tiles_group.draw(screen)
         lucky_group.draw(screen)
         box_group.draw(screen)
