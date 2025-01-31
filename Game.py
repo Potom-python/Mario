@@ -60,21 +60,21 @@ class Sky(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(coin_group, all_sprites)
-        self.image = coin_images['coin1']
+        self.image = coin_image['coin1']
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
         self.y_speed = -10
         self.start = pygame.time.get_ticks()
-        self.exist = 500
+        self.exist = 300
 
     def update(self):
-        if self.image == coin_images['coin1']:
-            self.image = coin_images['coin2']
-        elif self.image == coin_images['coin2']:
-            self.image = coin_images['coin3']
-        elif self.image == coin_images['coin3']:
-            self.image = coin_images['coin4']
+        if self.image == coin_image['coin1']:
+            self.image = coin_image['coin2']
+        elif self.image == coin_image['coin2']:
+            self.image = coin_image['coin3']
+        elif self.image == coin_image['coin3']:
+            self.image = coin_image['coin4']
         else:
-            self.image = coin_images['coin1']
+            self.image = coin_image['coin1']
         self.y_speed += 1
         self.rect.y += self.y_speed
         if pygame.time.get_ticks() - self.start >= self.exist:
@@ -115,55 +115,14 @@ class Camera:
         object.rect.x += self.x
 
     def update(self, target):
-
-        self.x = -(target.rect.x + target.rect.w // 2 - self.width // 2)
-
-
-class MagicMash(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(magic_mash_group, all_sprites)
-        self.image = magic_mash_image
-        self.rect = self.image.get_rect(center=(pos_x, pos_y))
-        self.x_speed = 3
-        self.y_speed = 0
-        self.grav = 0.5
-
-    def update(self):
-        self.apply_gravity()
-        self.x_collisions(box_group)
-        self.y_collisions(box_group)
-
-    def apply_gravity(self):
-        self.y_speed += self.grav
-
-    def x_collisions(self, box_group):
-        temp_rect = self.rect.copy()
-        temp_rect.x += self.x_speed
-
-        for box in box_group:
-            if temp_rect.colliderect(box.rect):
-               self.x_speed *= -1
-               return
-
-        self.rect.x += self.x_speed
-
-    def y_collisions(self, box_group):
-        temp_rect = self.rect.copy()
-        temp_rect.y += self.y_speed
-
-        for box in box_group:
-            if temp_rect.colliderect(box.rect):
-                if self.y_speed > 0:
-                     self.rect.bottom = box.rect.top
-                self.y_speed = 0
-                return
-        self.rect.y += self.y_speed
+        if target.rect.centerx > 500:
+            self.x = -(target.rect.x + target.rect.w // 2 - 1005 // 2)
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.image = mario_right_images['mario1'][0]
+        self.image = mario_right_images['mario1']
         self.rect = self.image.get_rect()
         self.rect.x = tile_width * pos_x
         self.rect.y = tile_height * pos_y - 19
@@ -175,7 +134,6 @@ class Player(pygame.sprite.Sprite):
         self.state_move = 1
         self.side = 'right'
         self.on_bottom = True
-        self.status = 0
 
     def update(self, sfx):
         keys = pygame.key.get_pressed()
@@ -184,13 +142,13 @@ class Player(pygame.sprite.Sprite):
             if self.state_move < 0:
                 self.state_move = 1
             if self.state_move == 1:
-                self.image = mario_right_images['mario2'][self.status]
+                self.image = mario_right_images['mario2']
                 self.state_move = 2
             elif self.state_move == 2:
-                self.image = mario_right_images['mario3'][self.status]
+                self.image = mario_right_images['mario3']
                 self.state_move = 3
             elif self.state_move == 3:
-                self.image = mario_right_images['mario4'][self.status]
+                self.image = mario_right_images['mario4']
                 self.state_move = 1
             self.x_speed = v
             self.side = 'right'
@@ -198,30 +156,30 @@ class Player(pygame.sprite.Sprite):
             if self.state_move > 0:
                 self.state_move = -1
             if self.state_move == -1:
-                self.image = mario_left_images['mario2'][self.status]
+                self.image = mario_left_images['mario2']
                 self.state_move = -2
             elif self.state_move == -2:
-                self.image = mario_left_images['mario3'][self.status]
+                self.image = mario_left_images['mario3']
                 self.state_move = -3
             elif self.state_move == -3:
-                self.image = mario_left_images['mario4'][self.status]
+                self.image = mario_left_images['mario4']
                 self.state_move = -1
             self.x_speed = -v
             self.side = 'left'
         else:
             if self.state_move >= 1:
-                self.image = mario_right_images['mario1'][self.status]
+                self.image = mario_right_images['mario1']
             elif self.state_move <= -1:
-                self.image = mario_left_images['mario1'][self.status]
+                self.image = mario_left_images['mario1']
             self.x_speed = 0
 
         if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             self.jump = True
         if self.jump:
             if self.side == 'right':
-                self.image = mario_right_images['mario5'][self.status]
+                self.image = mario_right_images['mario5']
             else:
-                self.image = mario_left_images['mario5'][self.status]
+                self.image = mario_left_images['mario5']
             self.state_move = 0
             self.on_bottom = False
 
@@ -258,10 +216,10 @@ class Player(pygame.sprite.Sprite):
                     self.y_speed = 0
                     if not self.on_bottom:
                         if self.side == 'right':
-                            self.image = mario_right_images['mario1'][self.status]
+                            self.image = mario_right_images['mario1']
                             self.state_move = 1
                         else:
-                            self.image = mario_left_images['mario1'][self.status]
+                            self.image = mario_left_images['mario1']
                             self.state_move = -1
                         self.on_bottom = True
 
@@ -284,28 +242,20 @@ class Player(pygame.sprite.Sprite):
                     self.y_speed = 0
                     if not self.on_bottom:
                         if self.side == 'right':
-                            self.image = mario_right_images['mario1'][self.status]
+                            self.image = mario_right_images['mario1']
                             self.state_move = 1
                         else:
-                            self.image = mario_left_images['mario1'][self.status]
+                            self.image = mario_left_images['mario1']
                             self.state_move = -1
                         self.on_bottom = True
 
                 if y_speed < 0:
                     if not lucky.changed:
                         sound_level('sfx-5.mp3')
-                        Coin(lucky.rect.centerx, lucky.rect.centery)
-                        MagicMash(lucky.rect.centerx, lucky.rect.centery)
                     lucky.changed = True
+                    Coin(lucky.rect.centerx, lucky.rect.centery)
                     self.rect.top = lucky.rect.bottom
                     self.y_speed = 0
-
-        for mash in magic_mash_group:
-            if pygame.sprite.collide_rect(self, mash):
-                sound_level('sfx-7.mp3')
-                mash.kill()
-                self.rect = mario_right_images['mario1'][1].get_rect()
-                self.status = 1
 
 
 all_sprites = pygame.sprite.Group()
@@ -315,7 +265,6 @@ sky_group = pygame.sprite.Group()
 box_group = pygame.sprite.Group()
 lucky_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
-magic_mash_group = pygame.sprite.Group()
 
 pygame.init()
 pygame.mixer.init()
@@ -333,18 +282,18 @@ tile_images = {
     'grass2': pygame.transform.scale(load_image('grass1.png'), (100, 50))
 }
 mario_right_images = {
-    'mario1': [pygame.transform.scale(load_image('mario1.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario1.png', -1), (30, 50))],
-    'mario2': [pygame.transform.scale(load_image('mario12.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario12.png', -1), (30, 50))],
-    'mario3': [pygame.transform.scale(load_image('mario13.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario13.png', -1), (30, 50))],
-    'mario4': [pygame.transform.scale(load_image('mario14.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario14.png', -1), (30, 50))],
-    'mario5': [pygame.transform.scale(load_image('mario15.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario15.png', -1), (30, 50))]
+    'mario1': pygame.transform.scale(load_image('mario1.png', -1), (20, 20)),
+    'mario2': pygame.transform.scale(load_image('mario12.png', -1), (20, 20)),
+    'mario3': pygame.transform.scale(load_image('mario13.png', -1), (20, 20)),
+    'mario4': pygame.transform.scale(load_image('mario14.png', -1), (20, 20)),
+    'mario5': pygame.transform.scale(load_image('mario15.png', -1), (20, 20))
 }
 mario_left_images = {
-    'mario1': [pygame.transform.scale(load_image('mario2.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario2.png', -1), (30, 50))],
-    'mario2': [pygame.transform.scale(load_image('mario22.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario22.png', -1), (30, 50))],
-    'mario3': [pygame.transform.scale(load_image('mario23.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario23.png', -1), (30, 50))],
-    'mario4': [pygame.transform.scale(load_image('mario24.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario24.png', -1), (30, 50))],
-    'mario5': [pygame.transform.scale(load_image('mario25.png'), (20, 20)), pygame.transform.scale(load_image('b_mario25.png', -1), (30, 50))]
+    'mario1': pygame.transform.scale(load_image('mario2.png', -1), (20, 20)),
+    'mario2': pygame.transform.scale(load_image('mario22.png', -1), (20, 20)),
+    'mario3': pygame.transform.scale(load_image('mario23.png', -1), (20, 20)),
+    'mario4': pygame.transform.scale(load_image('mario24.png', -1), (20, 20)),
+    'mario5': pygame.transform.scale(load_image('mario25.png'), (20, 20))
 }
 luckyblock_images = {
     'block1': pygame.transform.scale(load_image('luckyblock1.png', -1), (25, 25)),
@@ -353,8 +302,7 @@ luckyblock_images = {
     'block4': pygame.transform.scale(load_image('changed_lucky_block.png', -1), (25, 25))
 }
 sky_image = pygame.transform.scale(load_image('sky.png'), (25, 25))
-magic_mash_image = pygame.transform.scale(load_image('magic_mashroom.png'), (25, 25))
-coin_images = {
+coin_image = {
     'coin1': pygame.transform.scale(load_image('coin1.png'), (15, 20)),
     'coin2': pygame.transform.scale(load_image('coin2.png'), (15, 20)),
     'coin3': pygame.transform.scale(load_image('coin3.png'), (15, 20)),
@@ -447,40 +395,6 @@ def pause_menu(sfx):
         pygame.display.flip()
         clock.tick(FPS)
 
-def game_over_screen():
-    background = screen.copy()
-    font = pygame.font.SysFont(None, 55)
-
-    game_over_text = font.render('GAME OVER', True, (255, 0, 0))
-    game_over_rect = game_over_text.get_rect(center=(width // 2, height // 2 - 20))
-
-    restart_text = font.render('Нажмите R для перезапуска', True, (255, 255, 255))
-    restart_rect = restart_text.get_rect(center=(width // 2, height // 2 + 20))
-
-    exit_text = font.render('Нажмите Q для выхода', True, (255, 255, 255))
-    exit_rect = exit_text.get_rect(center=(width // 2, height // 2 + 60))
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:
-                    screen.fill((0, 0, 0))
-                    background.fill((0, 0, 0))
-                    return 2
-
-                elif event.key == pygame.K_q:
-                    terminate()
-
-        screen.blit(background, (0, 0))
-        screen.blit(game_over_text, game_over_rect)
-        screen.blit(restart_text, restart_rect)
-        screen.blit(exit_text, exit_rect)
-
-        pygame.display.flip()
-        clock.tick(FPS)
-
 
 def game(screen, number_level, sfx=True):
     filename = number_level
@@ -490,9 +404,6 @@ def game(screen, number_level, sfx=True):
     level = load_level(filename)
     player, level_x, level_y = generate_level(level)
     camera = Camera(width)
-
-    game_over = False
-
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -500,34 +411,18 @@ def game(screen, number_level, sfx=True):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pause_menu(sfx)
 
-        if not game_over:
-            screen.fill((0, 0, 0))
-            player_group.update(sfx)
-            camera.update(player)
-            lucky_group.update()
-            magic_mash_group.update()
-            coin_group.update()
-            for sprite in all_sprites:
-                camera.apply(sprite)
-            sky_group.draw(screen)
-            coin_group.draw(screen)
-            tiles_group.draw(screen)
-            magic_mash_group.draw(screen)
-            lucky_group.draw(screen)
-            box_group.draw(screen)
-            player_group.draw(screen)
-
-            if player.rect.y + player.rect.h >= height:
-                sound_level('mario-smert.mp3')
-                game_over = True
-
-        else:
-            game_over = game_over_screen()
-            if game_over == 2:
-                size_game = 1000, 325
-                screen_game = pygame.display.set_mode(size_game)
-                game(screen_game, number_level, sfx)
-                return
-
+        screen.fill((0, 0, 0))
+        player_group.update(sfx)
+        camera.update(player)
+        lucky_group.update()
+        coin_group.update()
+        for sprite in all_sprites:
+            camera.apply(sprite)
+        sky_group.draw(screen)
+        coin_group.draw(screen)
+        tiles_group.draw(screen)
+        lucky_group.draw(screen)
+        box_group.draw(screen)
+        player_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
