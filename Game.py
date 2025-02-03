@@ -33,6 +33,16 @@ def load_level(filename):
     return level_map
 
 
+def coin_or_mash(x, y, bottom):
+    chance = random.randint(0, 5)
+    if 2 < chance <= 5:
+        sound_level('sfx-5.mp3')
+        Coin(x, y)
+    else:
+        sound_level('sfx-7.mp3')
+        MagicMash(x, y, bottom)
+
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
@@ -62,19 +72,24 @@ class Coin(pygame.sprite.Sprite):
         super().__init__(coin_group, all_sprites)
         self.image = coin_images['coin1']
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
-        self.y_speed = -10
+        self.y_speed = -15
         self.start = pygame.time.get_ticks()
-        self.exist = 500
+        self.exist = 900
+        self.last_change = pygame.time.get_ticks()
+        self.inter = 200
 
     def update(self):
-        if self.image == coin_images['coin1']:
-            self.image = coin_images['coin2']
-        elif self.image == coin_images['coin2']:
-            self.image = coin_images['coin3']
-        elif self.image == coin_images['coin3']:
-            self.image = coin_images['coin4']
-        else:
-            self.image = coin_images['coin1']
+        current = pygame.time.get_ticks()
+        if current - self.last_change >= self.inter:
+            self.last_change = current
+            if self.image == coin_images['coin1']:
+                self.image = coin_images['coin2']
+            elif self.image == coin_images['coin2']:
+                self.image = coin_images['coin3']
+            elif self.image == coin_images['coin3']:
+                self.image = coin_images['coin4']
+            else:
+                self.image = coin_images['coin1']
         self.y_speed += 1
         self.rect.y += self.y_speed
         if pygame.time.get_ticks() - self.start >= self.exist:
@@ -112,6 +127,7 @@ class Camera:
         self.x = 0
 
     def apply(self, object):
+
         object.rect.x += self.x
 
     def update(self, target):
@@ -120,23 +136,24 @@ class Camera:
 
 
 class MagicMash(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y, bottom):
         super().__init__(magic_mash_group, all_sprites)
         self.image = magic_mash_image
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
+        self.rect.bottom = bottom
         self.x_speed = 3
         self.y_speed = 0
         self.grav = 0.5
 
     def update(self):
         self.apply_gravity()
-        self.x_collisions(box_group)
-        self.y_collisions(box_group)
+        self.x_collisions(box_group, lucky_group)
+        self.y_collisions(box_group, lucky_group)
 
     def apply_gravity(self):
         self.y_speed += self.grav
 
-    def x_collisions(self, box_group):
+    def x_collisions(self, box_group, lucky_group):
         temp_rect = self.rect.copy()
         temp_rect.x += self.x_speed
 
@@ -145,9 +162,14 @@ class MagicMash(pygame.sprite.Sprite):
                self.x_speed *= -1
                return
 
+        for lucky in lucky_group:
+            if temp_rect.colliderect(lucky.rect):
+               self.x_speed *= -1
+               return
+
         self.rect.x += self.x_speed
 
-    def y_collisions(self, box_group):
+    def y_collisions(self, box_group, lucky_group):
         temp_rect = self.rect.copy()
         temp_rect.y += self.y_speed
 
@@ -157,7 +179,82 @@ class MagicMash(pygame.sprite.Sprite):
                      self.rect.bottom = box.rect.top
                 self.y_speed = 0
                 return
+
+        for lucky in lucky_group:
+            if temp_rect.colliderect(lucky.rect):
+                if self.y_speed > 0:
+                     self.rect.bottom = lucky.rect.top
+                self.y_speed = 0
+                return
+
         self.rect.y += self.y_speed
+
+
+class Goombas(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(goombas_group, all_sprites)
+        self.image = goombas_images['goombas1']
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+        self.x_speed = -2
+        self.y_speed = 0
+        self.grav = 0.5
+        self.last_change = pygame.time.get_ticks()
+        self.inter = 150
+
+    def update(self):
+        current = pygame.time.get_ticks()
+        if current - self.last_change >= self.inter:
+            self.last_change = current
+            if self.image == goombas_images['goombas1']:
+                self.image = goombas_images['goombas2']
+            else:
+                self.image = goombas_images['goombas1']
+        self.apply_gravity()
+        self.x_collisions(box_group, lucky_group)
+        self.y_collisions(box_group, lucky_group)
+
+    def apply_gravity(self):
+        self.y_speed += self.grav
+
+    def x_collisions(self, box_group, lucky_group):
+        temp_rect = self.rect.copy()
+        temp_rect.x += self.x_speed
+
+        for box in box_group:
+            if temp_rect.colliderect(box.rect):
+                self.x_speed *= -1
+                return
+
+        for lucky in lucky_group:
+            if temp_rect.colliderect(lucky.rect):
+                self.x_speed *= -1
+                return
+
+        self.rect.x += self.x_speed
+
+    def y_collisions(self, box_group, lucky_group):
+        temp_rect = self.rect.copy()
+        temp_rect.y += self.y_speed
+
+        for box in box_group:
+            if temp_rect.colliderect(box.rect):
+                if self.y_speed > 0:
+                    self.rect.bottom = box.rect.top
+                self.y_speed = 0
+                return
+
+        for lucky in lucky_group:
+            if temp_rect.colliderect(lucky.rect):
+                if self.y_speed > 0:
+                    self.rect.bottom = lucky.rect.top
+                self.y_speed = 0
+                return
+
+    def death(self):
+        self.image = goombas_images['goombas3']
+        self.kill()
+
 
 
 class Player(pygame.sprite.Sprite):
@@ -176,6 +273,10 @@ class Player(pygame.sprite.Sprite):
         self.side = 'right'
         self.on_bottom = True
         self.status = 0
+        self.invulnerability = False
+        self.coins = 0
+        self.score = 0
+        self.lives = 3
 
     def update(self, sfx, number_level):
         keys = pygame.key.get_pressed()
@@ -227,22 +328,23 @@ class Player(pygame.sprite.Sprite):
 
         if self.jump and not self.sky:
             self.y_speed = -15
-            self.collide(0, self.y_speed, box_group)
+            self.collide(0, self.y_speed)
             sound_level('sfx-13.mp3', sfx)
 
         if self.sky:
             self.y_speed += self.grav
 
+
         self.sky = True
         self.rect.y += self.y_speed
-        self.collide(0, self.y_speed, box_group)
+        self.collide(0, self.y_speed)
 
         self.rect.x += self.x_speed
         if self.rect.x < 0:
             self.rect.x = 0
-        self.collide(self.x_speed, 0, box_group)
+        self.collide(self.x_speed, 0)
 
-    def collide(self, x_speed, y_speed, box_group):
+    def collide(self, x_speed, y_speed):
         for box in box_group:
             if pygame.sprite.collide_rect(self, box):
                 if x_speed > 0:
@@ -293,23 +395,54 @@ class Player(pygame.sprite.Sprite):
 
                 if y_speed < 0:
                     if not lucky.changed:
-                        sound_level('sfx-5.mp3')
-                        Coin(lucky.rect.centerx, lucky.rect.centery)
-                        MagicMash(lucky.rect.centerx, lucky.rect.centery)
+                        coin_or_mash(lucky.rect.centerx, lucky.rect.centery, lucky.rect.top)
+                        self.coins += 1
                     lucky.changed = True
                     self.rect.top = lucky.rect.bottom
                     self.y_speed = 0
 
         for mash in magic_mash_group:
             if pygame.sprite.collide_rect(self, mash):
+                sound_level('sfx-10.mp3')
                 cordx = self.rect.x
-                sound_level('sfx-7.mp3')
+                bottom = self.rect.bottom
                 self.status = 1
                 self.rect = mario_right_images['mario1'][self.status].get_rect()
-                self.rect.bottom = mash.rect.bottom
+                self.rect.bottom = bottom
                 self.rect.x = cordx
+                self.score += 1000
 
                 mash.kill()
+
+        for goom in goombas_group:
+            if pygame.sprite.collide_rect(self, goom):
+                if self.rect.bottom >= goom.rect.top and self.sky and y_speed > 0:
+                    goom.death()
+                    self.y_speed = -5
+                    self.sky = False
+                    self.on_bottom = False
+                    self.jump = False
+                    self.score += 100
+                elif not self.invulnerability:
+                    if self.status:
+                        sound_level('get_hit.mp3')
+                        cordx = self.rect.x
+                        bottom = self.rect.bottom
+                        self.status = 0
+                        self.rect = mario_right_images['mario1'][self.status].get_rect()
+                        self.rect.bottom = bottom
+                        self.rect.x = cordx
+                        self.set_invulnerability(2000)
+                    else:
+                        self.lives -= 3
+
+
+    def set_invulnerability(self, time):
+        self.invulnerability = True
+        pygame.time.set_timer(pygame.USEREVENT, time)
+
+    def make_invulnerability(self):
+        self.invulnerability = False
 
 
 all_sprites = pygame.sprite.Group()
@@ -320,6 +453,7 @@ box_group = pygame.sprite.Group()
 lucky_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
 magic_mash_group = pygame.sprite.Group()
+goombas_group = pygame.sprite.Group()
 
 pygame.init()
 pygame.mixer.init()
@@ -364,12 +498,28 @@ coin_images = {
     'coin3': pygame.transform.scale(load_image('coin3.png'), (15, 20)),
     'coin4': pygame.transform.scale(load_image('coin4.png'), (15, 20))
 }
-
+goombas_images = {
+    'goombas1': pygame.transform.scale(load_image('goombas1.png'), (25, 25)),
+    'goombas2': pygame.transform.scale(load_image('goombas2.png'), (25, 25)),
+    'goombas3': pygame.transform.scale(load_image('goombas3.png'), (25, 25))
+}
 tile_width = tile_height = 25
+
+def one_group_collisions(group):
+    sprites = group.sprites()
+
+    for k in range(len(sprites)):
+        for i in range(k + 1, len(sprites)):
+            sprite1 = sprites[k]
+            sprite2 = sprites[i]
+
+            if pygame.sprite.collide_rect(sprite1, sprite2):
+                sprite1.x_speed = -sprite1.x_speed
+                sprite2.x_speed = -sprite2.x_speed
 
 
 def generate_level(level):
-    new_player, x, y = None, None, None
+    new_player, x = None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
@@ -392,7 +542,10 @@ def generate_level(level):
             elif level[y][x] == '|':
                 Sky(x, y)
                 Box('column1', x, y)
-    return new_player, x, y
+            elif level[y][x] == '1':
+                Sky(x, y)
+                Goombas(x, y)
+    return new_player, x * tile_width
 
 
 def music_level(music_name, music=True):
@@ -492,10 +645,33 @@ def game(screen, number_level, sfx=True):
         print(f"Файл с уровнем '{filename}' не найден")
         sys.exit()
     level = load_level(filename)
-    player, level_x, level_y = generate_level(level)
+    player, level_x = generate_level(level)
     camera = Camera(width)
 
     game_over = False
+
+    def statistic():
+        color = (255, 255, 255)
+        font = pygame.font.SysFont(None, 30)
+        coins_text = font.render('COINS', True, (color))
+        coins_text_rect = coins_text.get_rect(center=(width // 3, 20))
+        coins = font.render(str(player.coins), True, (color))
+        coins_rect = coins.get_rect(center=(width // 3, 40))
+        lives_text = font.render('LIVES', True, (color))
+        lives_text_rect = lives_text.get_rect(center=(width // 2, 20))
+        lives = font.render(str(player.lives), True, (color))
+        lives_rect = lives.get_rect(center=(width // 2, 40))
+        score_text = font.render('SCORE', True, (color))
+        score_text_rect = score_text.get_rect(center=(width // 3 * 2, 20))
+        score = font.render(str(player.score), True, (color))
+        score_rect = score.get_rect(center=(width // 3 * 2, 40))
+
+        screen.blit(coins_text, coins_text_rect)
+        screen.blit(coins, coins_rect)
+        screen.blit(lives_text, lives_text_rect)
+        screen.blit(lives, lives_rect)
+        screen.blit(score_text, score_text_rect)
+        screen.blit(score, score_rect)
 
     while True:
         for event in pygame.event.get():
@@ -503,6 +679,8 @@ def game(screen, number_level, sfx=True):
                 terminate()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pause_menu(sfx)
+            if event.type == pygame.USEREVENT:
+                player.make_invulnerability()
 
         if not game_over:
             screen.fill((0, 0, 0))
@@ -511,15 +689,19 @@ def game(screen, number_level, sfx=True):
             lucky_group.update()
             coin_group.update()
             magic_mash_group.update()
+            one_group_collisions(goombas_group)
+            goombas_group.update()
             for sprite in all_sprites:
                 camera.apply(sprite)
             sky_group.draw(screen)
             coin_group.draw(screen)
             tiles_group.draw(screen)
             magic_mash_group.draw(screen)
+            goombas_group.draw(screen)
             lucky_group.draw(screen)
             box_group.draw(screen)
             player_group.draw(screen)
+            statistic()
 
             if player.rect.y + player.rect.h >= height:
                 sound_level('mario-smert.mp3')
