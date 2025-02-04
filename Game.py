@@ -35,12 +35,14 @@ def load_level(filename):
 
 def coin_or_mash(x, y, bottom):
     chance = random.randint(0, 5)
-    if 2 < chance <= 5:
+    if chance != 5:
         sound_level('sfx-5.mp3')
         Coin(x, y)
+        return 1
     else:
         sound_level('sfx-7.mp3')
         MagicMash(x, y, bottom)
+        return 0
 
 
 class Tile(pygame.sprite.Sprite):
@@ -119,6 +121,98 @@ class LuckyBlock(pygame.sprite.Sprite):
                     self.image = luckyblock_images['block1']
         else:
             self.image = luckyblock_images['block4']
+
+
+class FireBall(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, side):
+        super().__init__(fireball_group, all_sprites)
+        self.image = fire_ball_images['fireball1']
+        self.rect = self.image.get_rect()
+        self.rect.x = pos_x
+        self.rect.y = pos_y
+        self.x_speed = 7 if side == 'right' else -7
+        self.y_speed = 5
+        self.last_change = pygame.time.get_ticks()
+        self.inter = 50
+        self.grav = 1
+        self.collide = False
+
+    def update(self):
+        current = pygame.time.get_ticks()
+        if current - self.last_change >= self.inter:
+            self.last_change = current
+            if not self.collide:
+                if self.image == fire_ball_images['fireball1']:
+                    self.image = fire_ball_images['fireball2']
+                elif self.image == fire_ball_images['fireball2']:
+                    self.image = fire_ball_images['fireball3']
+                elif self.image == fire_ball_images['fireball3']:
+                    self.image = fire_ball_images['fireball4']
+                else:
+                    self.image = fire_ball_images['fireball1']
+            else:
+                if self.image == fire_ball_images['fireball5']:
+                    self.image = fire_ball_images['fireball6']
+                elif self.image == fire_ball_images['fireball6']:
+                    self.image = fire_ball_images['fireball7']
+                else:
+                    self.kill()
+
+        self.apply_gravity()
+        self.x_collisions()
+        self.y_collisions()
+        self.enemy_collisions()
+
+    def apply_gravity(self):
+        self.y_speed += self.grav
+
+    def x_collisions(self):
+        temp_rect = self.rect.copy()
+        temp_rect.x += self.x_speed
+
+        if not self.collide:
+
+            for box in box_group:
+                if temp_rect.colliderect(box.rect):
+                    self.collide = True
+                    self.image = fire_ball_images['fireball5']
+
+            for lucky in lucky_group:
+                if temp_rect.colliderect(lucky.rect):
+                    self.collide = True
+                    self.image = fire_ball_images['fireball5']
+
+            self.rect.x += self.x_speed
+
+    def y_collisions(self):
+        temp_rect = self.rect.copy()
+        temp_rect.y += self.y_speed
+
+        for box in box_group:
+            if temp_rect.colliderect(box.rect):
+                if self.y_speed > 0:
+                    self.y_speed = - 5
+                else:
+                    self.y_speed = 5
+                return
+
+        for lucky in lucky_group:
+            if temp_rect.colliderect(lucky.rect):
+                if self.y_speed > 0:
+                    self.y_speed = -5
+                else:
+                    self.y_speed = 5
+                return
+
+        self.rect.y += self.y_speed
+
+    def enemy_collisions(self):
+        if not self.collide:
+            for enemy in goombas_group:
+                if self.rect.colliderect(enemy.rect):
+                    self.collide = True
+                    enemy.death()
+                    self.image = fire_ball_images['fireball5']
 
 
 class Camera:
@@ -277,10 +371,12 @@ class Player(pygame.sprite.Sprite):
         self.coins = 0
         self.score = 0
         self.lives = 3
+        self.key_pressed = False
 
     def update(self, sfx, number_level):
         keys = pygame.key.get_pressed()
         v = 5
+
         if keys[pygame.K_RIGHT]:
             if self.state_move < 0:
                 self.state_move = 1
@@ -316,6 +412,14 @@ class Player(pygame.sprite.Sprite):
                 self.image = mario_left_images['mario1'][self.status]
             self.x_speed = 0
 
+        if keys[pygame.K_c]:
+            if not self.key_pressed:
+                sound_level('sfx-17.mp3')
+                FireBall(self.rect.centerx, self.rect.centery, self.side)
+                self.key_pressed = True
+        else:
+            self.key_pressed = False
+
         if keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             self.jump = True
         if self.jump:
@@ -333,7 +437,6 @@ class Player(pygame.sprite.Sprite):
 
         if self.sky:
             self.y_speed += self.grav
-
 
         self.sky = True
         self.rect.y += self.y_speed
@@ -395,8 +498,7 @@ class Player(pygame.sprite.Sprite):
 
                 if y_speed < 0:
                     if not lucky.changed:
-                        coin_or_mash(lucky.rect.centerx, lucky.rect.centery, lucky.rect.top)
-                        self.coins += 1
+                        self.coins += coin_or_mash(lucky.rect.centerx, lucky.rect.centery, lucky.rect.top)
                     lucky.changed = True
                     self.rect.top = lucky.rect.bottom
                     self.y_speed = 0
@@ -454,6 +556,7 @@ lucky_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
 magic_mash_group = pygame.sprite.Group()
 goombas_group = pygame.sprite.Group()
+fireball_group = pygame.sprite.Group()
 
 pygame.init()
 pygame.mixer.init()
@@ -502,6 +605,15 @@ goombas_images = {
     'goombas1': pygame.transform.scale(load_image('goombas1.png'), (25, 25)),
     'goombas2': pygame.transform.scale(load_image('goombas2.png'), (25, 25)),
     'goombas3': pygame.transform.scale(load_image('goombas3.png'), (25, 25))
+}
+fire_ball_images ={
+    'fireball1': pygame.transform.scale(load_image('fireball1.png'), (10, 10)),
+    'fireball2': pygame.transform.scale(load_image('fireball2.png'), (10, 10)),
+    'fireball3': pygame.transform.scale(load_image('fireball3.png'), (10, 10)),
+    'fireball4': pygame.transform.scale(load_image('fireball4.png'), (10, 10)),
+    'fireball5': pygame.transform.scale(load_image('fireball5.png'), (10, 10)),
+    'fireball6': pygame.transform.scale(load_image('fireball6.png'), (15, 15)),
+    'fireball7': pygame.transform.scale(load_image('fireball7.png'), (20, 20))
 }
 tile_width = tile_height = 25
 
@@ -655,14 +767,19 @@ def game(screen, number_level, sfx=True):
         font = pygame.font.SysFont(None, 30)
         coins_text = font.render('COINS', True, (color))
         coins_text_rect = coins_text.get_rect(center=(width // 3, 20))
+
         coins = font.render(str(player.coins), True, (color))
         coins_rect = coins.get_rect(center=(width // 3, 40))
+
         lives_text = font.render('LIVES', True, (color))
         lives_text_rect = lives_text.get_rect(center=(width // 2, 20))
+
         lives = font.render(str(player.lives), True, (color))
         lives_rect = lives.get_rect(center=(width // 2, 40))
+
         score_text = font.render('SCORE', True, (color))
         score_text_rect = score_text.get_rect(center=(width // 3 * 2, 20))
+
         score = font.render(str(player.score), True, (color))
         score_rect = score.get_rect(center=(width // 3 * 2, 40))
 
@@ -691,6 +808,7 @@ def game(screen, number_level, sfx=True):
             magic_mash_group.update()
             one_group_collisions(goombas_group)
             goombas_group.update()
+            fireball_group.update()
             for sprite in all_sprites:
                 camera.apply(sprite)
             sky_group.draw(screen)
@@ -700,6 +818,7 @@ def game(screen, number_level, sfx=True):
             goombas_group.draw(screen)
             lucky_group.draw(screen)
             box_group.draw(screen)
+            fireball_group.draw(screen)
             player_group.draw(screen)
             statistic()
 
