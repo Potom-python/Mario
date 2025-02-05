@@ -221,11 +221,9 @@ class Camera:
         self.x = 0
 
     def apply(self, object):
-
         object.rect.x += self.x
 
     def update(self, target):
-
         self.x = -(target.rect.x + target.rect.w // 2 - self.width // 2)
 
 
@@ -253,13 +251,13 @@ class MagicMash(pygame.sprite.Sprite):
 
         for box in box_group:
             if temp_rect.colliderect(box.rect):
-               self.x_speed *= -1
-               return
+                self.x_speed *= -1
+                return
 
         for lucky in lucky_group:
             if temp_rect.colliderect(lucky.rect):
-               self.x_speed *= -1
-               return
+                self.x_speed *= -1
+                return
 
         self.rect.x += self.x_speed
 
@@ -270,14 +268,14 @@ class MagicMash(pygame.sprite.Sprite):
         for box in box_group:
             if temp_rect.colliderect(box.rect):
                 if self.y_speed > 0:
-                     self.rect.bottom = box.rect.top
+                    self.rect.bottom = box.rect.top
                 self.y_speed = 0
                 return
 
         for lucky in lucky_group:
             if temp_rect.colliderect(lucky.rect):
                 if self.y_speed > 0:
-                     self.rect.bottom = lucky.rect.top
+                    self.rect.bottom = lucky.rect.top
                 self.y_speed = 0
                 return
 
@@ -348,7 +346,6 @@ class Goombas(pygame.sprite.Sprite):
     def death(self):
         self.image = goombas_images['goombas3']
         self.kill()
-
 
 
 class Player(pygame.sprite.Sprite):
@@ -538,7 +535,6 @@ class Player(pygame.sprite.Sprite):
                     else:
                         self.lives -= 3
 
-
     def set_invulnerability(self, time):
         self.invulnerability = True
         pygame.time.set_timer(pygame.USEREVENT, time)
@@ -574,18 +570,28 @@ tile_images = {
     'grass2': pygame.transform.scale(load_image('grass1.png'), (100, 50))
 }
 mario_right_images = {
-    'mario1': [pygame.transform.scale(load_image('mario1.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario1.png', -1), (30, 50))],
-    'mario2': [pygame.transform.scale(load_image('mario12.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario12.png', -1), (30, 50))],
-    'mario3': [pygame.transform.scale(load_image('mario13.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario13.png', -1), (30, 50))],
-    'mario4': [pygame.transform.scale(load_image('mario14.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario14.png', -1), (30, 50))],
-    'mario5': [pygame.transform.scale(load_image('mario15.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario15.png', -1), (30, 50))]
+    'mario1': [pygame.transform.scale(load_image('mario1.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario1.png', -1), (30, 50))],
+    'mario2': [pygame.transform.scale(load_image('mario12.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario12.png', -1), (30, 50))],
+    'mario3': [pygame.transform.scale(load_image('mario13.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario13.png', -1), (30, 50))],
+    'mario4': [pygame.transform.scale(load_image('mario14.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario14.png', -1), (30, 50))],
+    'mario5': [pygame.transform.scale(load_image('mario15.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario15.png', -1), (30, 50))]
 }
 mario_left_images = {
-    'mario1': [pygame.transform.scale(load_image('mario2.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario2.png', -1), (30, 50))],
-    'mario2': [pygame.transform.scale(load_image('mario22.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario22.png', -1), (30, 50))],
-    'mario3': [pygame.transform.scale(load_image('mario23.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario23.png', -1), (30, 50))],
-    'mario4': [pygame.transform.scale(load_image('mario24.png', -1), (20, 20)), pygame.transform.scale(load_image('b_mario24.png', -1), (30, 50))],
-    'mario5': [pygame.transform.scale(load_image('mario25.png'), (20, 20)), pygame.transform.scale(load_image('b_mario25.png', -1), (30, 50))]
+    'mario1': [pygame.transform.scale(load_image('mario2.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario2.png', -1), (30, 50))],
+    'mario2': [pygame.transform.scale(load_image('mario22.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario22.png', -1), (30, 50))],
+    'mario3': [pygame.transform.scale(load_image('mario23.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario23.png', -1), (30, 50))],
+    'mario4': [pygame.transform.scale(load_image('mario24.png', -1), (20, 20)),
+               pygame.transform.scale(load_image('b_mario24.png', -1), (30, 50))],
+    'mario5': [pygame.transform.scale(load_image('mario25.png'), (20, 20)),
+               pygame.transform.scale(load_image('b_mario25.png', -1), (30, 50))]
 }
 luckyblock_images = {
     'block1': pygame.transform.scale(load_image('luckyblock1.png', -1), (25, 25)),
@@ -606,7 +612,7 @@ goombas_images = {
     'goombas2': pygame.transform.scale(load_image('goombas2.png'), (25, 25)),
     'goombas3': pygame.transform.scale(load_image('goombas3.png'), (25, 25))
 }
-fire_ball_images ={
+fire_ball_images = {
     'fireball1': pygame.transform.scale(load_image('fireball1.png'), (10, 10)),
     'fireball2': pygame.transform.scale(load_image('fireball2.png'), (10, 10)),
     'fireball3': pygame.transform.scale(load_image('fireball3.png'), (10, 10)),
@@ -616,6 +622,93 @@ fire_ball_images ={
     'fireball7': pygame.transform.scale(load_image('fireball7.png'), (20, 20))
 }
 tile_width = tile_height = 25
+
+
+def draw_game():
+    global all_sprites, tiles_group, player_group, sky_group, box_group, lucky_group, coin_group, magic_mash_group
+    global goombas_group, fireball_group, width, height, size, screen, FPS, clock, tile_images, mario_right_images
+    global mario_left_images, luckyblock_images, sky_image, magic_mash_image, coin_images, goombas_images
+    global fire_ball_images, tile_width, tile_height
+    all_sprites = pygame.sprite.Group()
+    tiles_group = pygame.sprite.Group()
+    player_group = pygame.sprite.Group()
+    sky_group = pygame.sprite.Group()
+    box_group = pygame.sprite.Group()
+    lucky_group = pygame.sprite.Group()
+    coin_group = pygame.sprite.Group()
+    magic_mash_group = pygame.sprite.Group()
+    goombas_group = pygame.sprite.Group()
+    fireball_group = pygame.sprite.Group()
+
+    pygame.init()
+    pygame.mixer.init()
+    size = width, height = 1000, 325
+    screen = pygame.display.set_mode(size)
+
+    FPS = 30
+    clock = pygame.time.Clock()
+    tile_images = {
+        'wall': pygame.transform.scale(load_image('wall.png', -1), (25, 25)),
+        'column1': pygame.transform.scale(load_image('column1.png'), (50, 60)),
+        'cloud1': pygame.transform.scale(load_image('cloud1.png'), (100, 50)),
+        'cloud2': pygame.transform.scale(load_image('cloud2.png'), (70, 50)),
+        'grass1': pygame.transform.scale(load_image('grass1.png'), (100, 50)),
+        'grass2': pygame.transform.scale(load_image('grass1.png'), (100, 50))
+    }
+    mario_right_images = {
+        'mario1': [pygame.transform.scale(load_image('mario1.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario1.png', -1), (30, 50))],
+        'mario2': [pygame.transform.scale(load_image('mario12.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario12.png', -1), (30, 50))],
+        'mario3': [pygame.transform.scale(load_image('mario13.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario13.png', -1), (30, 50))],
+        'mario4': [pygame.transform.scale(load_image('mario14.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario14.png', -1), (30, 50))],
+        'mario5': [pygame.transform.scale(load_image('mario15.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario15.png', -1), (30, 50))]
+    }
+    mario_left_images = {
+        'mario1': [pygame.transform.scale(load_image('mario2.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario2.png', -1), (30, 50))],
+        'mario2': [pygame.transform.scale(load_image('mario22.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario22.png', -1), (30, 50))],
+        'mario3': [pygame.transform.scale(load_image('mario23.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario23.png', -1), (30, 50))],
+        'mario4': [pygame.transform.scale(load_image('mario24.png', -1), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario24.png', -1), (30, 50))],
+        'mario5': [pygame.transform.scale(load_image('mario25.png'), (20, 20)),
+                   pygame.transform.scale(load_image('b_mario25.png', -1), (30, 50))]
+    }
+    luckyblock_images = {
+        'block1': pygame.transform.scale(load_image('luckyblock1.png', -1), (25, 25)),
+        'block2': pygame.transform.scale(load_image('luckyblock2.png', -1), (25, 25)),
+        'block3': pygame.transform.scale(load_image('luckyblock3.png', -1), (25, 25)),
+        'block4': pygame.transform.scale(load_image('changed_lucky_block.png', -1), (25, 25))
+    }
+    sky_image = pygame.transform.scale(load_image('sky.png'), (25, 25))
+    magic_mash_image = pygame.transform.scale(load_image('magic_mashroom.png'), (25, 25))
+    coin_images = {
+        'coin1': pygame.transform.scale(load_image('coin1.png'), (15, 20)),
+        'coin2': pygame.transform.scale(load_image('coin2.png'), (15, 20)),
+        'coin3': pygame.transform.scale(load_image('coin3.png'), (15, 20)),
+        'coin4': pygame.transform.scale(load_image('coin4.png'), (15, 20))
+    }
+    goombas_images = {
+        'goombas1': pygame.transform.scale(load_image('goombas1.png'), (25, 25)),
+        'goombas2': pygame.transform.scale(load_image('goombas2.png'), (25, 25)),
+        'goombas3': pygame.transform.scale(load_image('goombas3.png'), (25, 25))
+    }
+    fire_ball_images = {
+        'fireball1': pygame.transform.scale(load_image('fireball1.png'), (10, 10)),
+        'fireball2': pygame.transform.scale(load_image('fireball2.png'), (10, 10)),
+        'fireball3': pygame.transform.scale(load_image('fireball3.png'), (10, 10)),
+        'fireball4': pygame.transform.scale(load_image('fireball4.png'), (10, 10)),
+        'fireball5': pygame.transform.scale(load_image('fireball5.png'), (10, 10)),
+        'fireball6': pygame.transform.scale(load_image('fireball6.png'), (15, 15)),
+        'fireball7': pygame.transform.scale(load_image('fireball7.png'), (20, 20))
+    }
+    tile_width = tile_height = 25
+
 
 def one_group_collisions(group):
     sprites = group.sprites()
@@ -701,20 +794,21 @@ def pause_menu(sfx):
         screen.blit(background, (0, 0))
 
         font = pygame.font.SysFont(None, 40)
-        text = font.render('Пауза', True, (0, 255, 0))
+        text = font.render('Пауза', True, (0, 0, 0))
         text_rect = text.get_rect(center=(width // 2, height // 2 - 20))
         screen.blit(text, text_rect)
 
-        continue_text = font.render('Нажмите ESC для продолжения', True, (0, 255, 0))
+        continue_text = font.render('Нажмите ESC для продолжения', True, (0, 0, 0))
         continue_rect = continue_text.get_rect(center=(width // 2, height // 2 + 20))
         screen.blit(continue_text, continue_rect)
 
-        exit_text = font.render('Нажмите Q для выхода из игры', True, (0, 255, 0))
+        exit_text = font.render('Нажмите Q для выхода из игры', True, (0, 0, 0))
         exit_rect = exit_text.get_rect(center=(width // 2, height // 2 + 60))
         screen.blit(exit_text, exit_rect)
 
         pygame.display.flip()
         clock.tick(FPS)
+
 
 def game_over_screen():
     background = screen.copy()
@@ -829,10 +923,11 @@ def game(screen, number_level, sfx=True):
         else:
             game_over = game_over_screen()
             if game_over == 2:
+                screen.fill((255, 255, 255))
                 size_game = 1000, 325
                 screen_game = pygame.display.set_mode(size_game)
+                draw_game()
                 game(screen_game, number_level, sfx)
-                return
 
         pygame.display.flip()
         clock.tick(FPS)
