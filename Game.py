@@ -744,6 +744,7 @@ def draw_game():
     pygame.mixer.init()
     size = width, height = 1000, 325
     screen = pygame.display.set_mode(size)
+    pygame.display.set_caption('Mario')
 
     FPS = 30
     clock = pygame.time.Clock()

@@ -9,6 +9,7 @@ pygame.init()
 FPS = 30
 size = width, height = 1000, 1000
 screen = pygame.display.set_mode(size)
+pygame.display.set_caption('Mario')
 clock = pygame.time.Clock()
 
 
