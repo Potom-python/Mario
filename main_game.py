@@ -13,11 +13,13 @@ pygame.display.set_caption('Mario')
 clock = pygame.time.Clock()
 
 
+# функция выхода из игры
 def terminate():
     pygame.quit()
     sys.exit()
 
 
+# функция загрузки изображений
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
@@ -34,6 +36,7 @@ def load_image(name, colorkey=None):
     return image
 
 
+# класс не активных кнопок
 class ButtonDef(pygame.sprite.Sprite):
     def __init__(self, top, *group):
         super().__init__(*group)
@@ -42,7 +45,7 @@ class ButtonDef(pygame.sprite.Sprite):
         self.rect.x = 10
         self.rect.top = top
 
-
+# класс активных кнопок
 class ButtonAnim(pygame.sprite.Sprite):
     def __init__(self, top, *group):
         super().__init__(*group)
@@ -52,7 +55,7 @@ class ButtonAnim(pygame.sprite.Sprite):
         self.rect.x = 10
         self.rect.top = top
 
-
+# класс для отрисовки кнопок уровней
 class Level:
     def __init__(self, x, y, width, height, number):
         self.rect = pygame.Rect(x, y, width, height)
@@ -66,6 +69,7 @@ class Level:
         screen.blit(text, text_rect)
 
 
+# функция для отрисовки меню уровней
 def menu_levels(sfx):
     fon = pygame.transform.scale(load_image('fon_mar.jpg'), size)
 
@@ -90,7 +94,7 @@ def menu_levels(sfx):
                     else:
                         size_game = 1000, 325
                         screen_game = pygame.display.set_mode(size_game)
-                        game(screen_game,f'level{selected_level.number}.txt', sfx)
+                        game(screen_game, f'level{selected_level.number}.txt', sfx)
                 elif event.key == pygame.K_LEFT:
                     current_index = levels.index(selected_level)
                     new_index = (current_index - 1) % len(levels)
@@ -110,7 +114,7 @@ def menu_levels(sfx):
         pygame.display.flip()
         pygame.time.Clock().tick(60)
 
-
+# основная функция отрисовки меню
 def draw(n, intro_text):
     fon = pygame.transform.scale(load_image('fon_mar.jpg'), size)
     screen.blit(fon, (0, 0))
@@ -130,7 +134,7 @@ def draw(n, intro_text):
         screen.blit(string_rendered, intro_rect)
     return font, text_coord, schet_anim, buttons_sprites
 
-
+# функция основного меню
 def start_screen(music=True, sfx=True):
     intro_text = ["Игра про марио", "",
                   "Перемещение героя происходит по нажатию стрелочек",
@@ -189,6 +193,7 @@ def start_screen(music=True, sfx=True):
             clock.tick(FPS)
 
 
+# функция меню настроек
 def settings(music=True, sfx=True):
     intro_text = ["НАСТРОЙКИ", "", "",
                   "МУЗЫКА",
